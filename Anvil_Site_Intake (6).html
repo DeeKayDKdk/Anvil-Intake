@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Anvil Site Intake</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --forest:#1B3D2F;--forest-mid:#2d5a42;--forest-pale:#f2f7f4;
+  --sand:#efe9dc;--border:#ddd8ce;--text:#1a1a1a;--muted:#777;
+  --red:#c0392b;--red-bg:#fdf4f3;--amber:#b8860b;--amber-bg:#fdf8ee;
+}
+html{font-size:16px;}
+body{font-family:'DM Sans',Helvetica,Arial,sans-serif;background:#f5f3ef;color:var(--text);padding-bottom:60px;}
+
+/* HEADER */
+.hdr{background:var(--forest);padding:14px 18px 12px;position:sticky;top:0;z-index:100;}
+.hdr-row{display:flex;justify-content:space-between;align-items:center;}
+.hdr-brand{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.45);}
+.hdr-title{font-size:17px;font-weight:700;color:#fff;margin-top:2px;}
+.hdr-ver{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.3);}
+.prog{background:rgba(255,255,255,.15);height:3px;margin-top:10px;border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;background:#fff;border-radius:2px;transition:width .3s;width:0%;}
+
+/* ALERT CARDS */
+.alert-card{margin:12px 14px 0;border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;}
+.alert-card.amber{background:#fff8ee;border:1.5px solid #e0a020;}
+.alert-card.green{background:var(--forest-pale);border:1.5px solid #b8d4c2;}
+.alert-icon{font-size:18px;flex-shrink:0;line-height:1.2;}
+.alert-title{font-size:12px;font-weight:700;margin-bottom:3px;}
+.alert-card.amber .alert-title{color:#7a5000;}
+.alert-card.green .alert-title{color:var(--forest);}
+.alert-body{font-size:11px;line-height:1.5;}
+.alert-card.amber .alert-body{color:#7a5000;}
+.alert-card.green .alert-body{color:#3a5a40;}
+
+/* SECTIONS */
+.sec{margin:12px 14px 0;background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.sec-hdr{background:var(--forest-pale);padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
+.sec-num{background:var(--forest);color:#fff;font-family:'DM Mono',monospace;font-size:10px;width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sec-title{font-size:13px;font-weight:700;color:var(--forest);}
+.sec-body{padding:14px;}
+
+/* FIELDS */
+.field{margin-bottom:16px;}
+.field:last-child{margin-bottom:0;}
+.f-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:5px;display:block;}
+.f-hint{font-size:11px;color:var(--muted);margin-bottom:6px;line-height:1.4;}
+input[type=text],input[type=number],textarea,select{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;
+  font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);background:#fff;
+  -webkit-appearance:none;appearance:none;outline:none;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--forest);}
+textarea{resize:none;line-height:1.5;}
+
+/* CHIPS — using <button> for iOS reliability */
+.chips{display:flex;flex-wrap:wrap;gap:8px;}
+button.chip{
+  padding:10px 14px;border:1.5px solid var(--border);border-radius:20px;
+  font-size:13px;font-weight:500;color:var(--muted);background:#fff;
+  cursor:pointer;min-height:44px;font-family:'DM Sans',sans-serif;
+  -webkit-appearance:none;appearance:none;outline:none;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+button.chip:focus{outline:none;background:#fff;color:var(--muted);border-color:var(--border);}
+button.chip.on{background:var(--forest) !important;border-color:var(--forest) !important;color:#fff !important;}
+
+/* TOGGLE ROW — using <button> */
+.tog-row{display:flex;gap:8px;}
+button.tog{
+  flex:1;padding:13px 8px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:13px;font-weight:600;color:var(--muted);background:#fff;
+  cursor:pointer;min-height:44px;font-family:'DM Sans',sans-serif;
+  -webkit-appearance:none;appearance:none;text-align:center;outline:none;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+button.tog:focus{outline:none;background:#fff;color:var(--muted);border-color:var(--border);}
+button.tog.on{background:var(--forest-pale) !important;border-color:var(--forest) !important;color:var(--forest) !important;}
+
+/* SERVICE CARDS */
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+button.svc{
+  border:1.5px solid var(--border);border-radius:10px;padding:14px;
+  background:#fff;cursor:pointer;text-align:left;min-height:90px;
+  font-family:'DM Sans',sans-serif;-webkit-appearance:none;appearance:none;
+  width:100%;outline:none;-webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+button.svc:focus{outline:none;}
+button.svc.on{border-color:var(--forest) !important;background:var(--forest-pale) !important;}
+.svc-icon{font-size:22px;margin-bottom:6px;display:block;}
+.svc-name{font-size:13px;font-weight:700;color:var(--text);display:block;margin-bottom:2px;}
+button.svc.on .svc-name{color:var(--forest);}
+.svc-desc{font-size:11px;color:var(--muted);line-height:1.4;display:block;}
+
+/* STYLE DIRECTION BUTTONS */
+button.style-btn{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;
+  background:#fff;cursor:pointer;text-align:left;min-height:56px;
+  font-family:'DM Sans',sans-serif;-webkit-appearance:none;appearance:none;
+  margin-bottom:8px;display:block;outline:none;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+button.style-btn:last-child{margin-bottom:0;}
+button.style-btn:focus{outline:none;}
+button.style-btn.on{background:var(--forest-pale) !important;border-color:var(--forest) !important;}
+.style-name{font-size:13px;font-weight:700;color:var(--text);display:block;}
+button.style-btn.on .style-name{color:var(--forest);}
+.style-desc{font-size:11px;color:var(--muted);font-weight:400;display:block;margin-top:2px;}
+
+/* REBATE ITEMS */
+button.rebate{
+  width:100%;display:flex;align-items:center;gap:12px;padding:10px 12px;
+  border:1.5px solid var(--border);border-radius:8px;background:#fff;
+  cursor:pointer;font-family:'DM Sans',sans-serif;-webkit-appearance:none;
+  appearance:none;text-align:left;margin-bottom:8px;min-height:52px;
+  outline:none;-webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+button.rebate:last-child{margin-bottom:0;}
+button.rebate:focus{outline:none;}
+button.rebate.on{border-color:var(--forest) !important;background:var(--forest-pale) !important;}
+.reb-check{width:20px;height:20px;border:2px solid var(--border);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;}
+button.rebate.on .reb-check{background:var(--forest);border-color:var(--forest);color:#fff;}
+.reb-name{font-size:13px;font-weight:600;color:var(--text);display:block;}
+.reb-amt{font-size:11px;color:var(--forest);font-weight:600;display:block;}
+
+/* PACKAGE BUTTONS */
+button.pkg{
+  width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;
+  background:#fff;cursor:pointer;text-align:left;min-height:48px;
+  font-family:'DM Sans',sans-serif;-webkit-appearance:none;appearance:none;
+  margin-bottom:8px;font-size:13px;font-weight:600;color:var(--muted);
+  outline:none;-webkit-tap-highlight-color:rgba(0,0,0,0);
+}
+button.pkg:last-child{margin-bottom:0;}
+button.pkg:focus{outline:none;}
+button.pkg.on{background:var(--forest-pale) !important;border-color:var(--forest) !important;color:var(--forest) !important;}
+
+/* INLINE WARNING */
+.inline-warn{display:none;margin-top:8px;background:var(--red-bg);border-left:3px solid var(--red);border-radius:0 6px 6px 0;padding:10px 12px;font-size:11.5px;color:#7a1a10;line-height:1.5;}
+.inline-warn.show{display:block;}
+
+/* CONDITIONAL */
+.xonly{display:none;}
+.xonly.show{display:block;}
+.irr-detail{display:none;margin-top:8px;}
+.irr-detail.show{display:block;}
+
+/* GENERATE + RESET */
+.btn-wrap{margin:16px 14px 0;}
+button.gen{
+  width:100%;background:var(--forest);color:#fff;border:none;border-radius:10px;
+  padding:16px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;
+  cursor:pointer;min-height:52px;
+}
+button.gen:active{background:var(--forest-mid);}
+button.rst{
+  width:100%;margin-top:10px;background:none;border:1.5px solid var(--border);
+  border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:14px;
+  font-weight:600;color:var(--muted);cursor:pointer;min-height:48px;
+}
+
+/* INSTRUCTIONS */
+.instr{margin:14px 14px 0;background:var(--forest-pale);border:1px solid #b8d4c2;border-radius:10px;padding:14px;display:none;}
+.instr.show{display:block;}
+.instr-title{font-size:12px;font-weight:700;color:var(--forest);margin-bottom:8px;}
+.instr-step{font-size:12px;color:#333;padding:4px 0 4px 18px;position:relative;line-height:1.5;}
+.instr-step::before{content:attr(data-n);position:absolute;left:0;color:var(--forest);font-weight:700;}
+
+/* OUTPUT */
+.out-wrap{margin:14px 14px 0;display:none;}
+.out-wrap.show{display:block;}
+.out-hdr{background:var(--forest);color:#fff;padding:12px 14px;border-radius:10px 10px 0 0;display:flex;justify-content:space-between;align-items:center;}
+.out-title{font-size:13px;font-weight:700;}
+button.copy-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;min-height:36px;}
+.out-body{background:#1a1a1a;color:#e8e8e8;padding:14px;font-family:'DM Mono',monospace;font-size:11px;line-height:1.7;border-radius:0 0 10px 10px;white-space:pre-wrap;word-break:break-word;}
+
+.alert-note{background:var(--amber-bg);border-left:3px solid var(--amber);border-radius:0 6px 6px 0;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#5a4010;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div><div class="hdr-brand">Anvil Landscape Co.</div><div class="hdr-title">Site Intake Form</div></div>
+    <div class="hdr-ver">v1.2</div>
+  </div>
+  <div class="prog"><div class="prog-fill" id="pf"></div></div>
+</div>
+
+<div class="alert-card amber">
+  <div class="alert-icon">⚠️</div>
+  <div><div class="alert-title">Before Every Job — Call 811</div><div class="alert-body">Required in Colorado before any digging. Call 3 business days ahead. <strong>call811.com</strong> or dial <strong>811</strong></div></div>
+</div>
+<div class="alert-card green">
+  <div class="alert-icon">📸</div>
+  <div><div class="alert-title">Take Photos Before You Leave</div><div class="alert-body">Full yard, each bed area, sun exposure, architecture, existing features. Upload these alongside this prompt in ChatGPT.</div></div>
+</div>
+
+<!-- 1. SERVICE TYPE -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num">1</div><div class="sec-title">Service Type</div></div>
+  <div class="sec-body">
+    <div class="svc-grid">
+      <button type="button" class="svc" id="svc-bed" onclick="setSvc('bed')">
+        <span class="svc-icon">🌿</span>
+        <span class="svc-name">Flower Bed Install</span>
+        <span class="svc-desc">Planting, edging, mulch. Existing lawn stays.</span>
+      </button>
+      <button type="button" class="svc" id="svc-xer" onclick="setSvc('xeriscape')">
+        <span class="svc-icon">🪨</span>
+        <span class="svc-name">Full Xeriscape</span>
+        <span class="svc-desc">Complete turf removal and water-smart redesign.</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 2. CLIENT INFO -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num">2</div><div class="sec-title">Client Info</div></div>
+  <div class="sec-body">
+    <div class="field"><label class="f-label">Client Name</label><input type="text" id="clientName" placeholder="First Last"></div>
+    <div class="field"><label class="f-label">Address</label><input type="text" id="clientAddress" placeholder="123 Main St, Denver CO"></div>
+    <div class="field">
+      <label class="f-label">Neighborhood</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'nbhd')">Wash Park</button>
+        <button type="button" class="chip" onclick="pick(this,'nbhd')">Highlands</button>
+        <button type="button" class="chip" onclick="pick(this,'nbhd')">Platt Park</button>
+        <button type="button" class="chip" onclick="pick(this,'nbhd')">Park Hill</button>
+        <button type="button" class="chip" onclick="pick(this,'nbhd')">Capitol Hill</button>
+        <button type="button" class="chip" onclick="pick(this,'nbhd')">RiNo</button>
+        <button type="button" class="chip" onclick="pick(this,'nbhd')">Baker</button>
+        <button type="button" class="chip" onclick="pick(this,'nbhd')">Other</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Municipality</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'muni')">Denver</button>
+        <button type="button" class="chip" onclick="pick(this,'muni')">Aurora</button>
+        <button type="button" class="chip" onclick="pick(this,'muni')">Castle Rock</button>
+        <button type="button" class="chip" onclick="pick(this,'muni')">Fort Collins</button>
+        <button type="button" class="chip" onclick="pick(this,'muni')">Other</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">HOA</label>
+      <div class="tog-row">
+        <button type="button" class="tog" onclick="tog(this,'hoa','yes')">Yes</button>
+        <button type="button" class="tog" onclick="tog(this,'hoa','no')">No</button>
+        <button type="button" class="tog" onclick="tog(this,'hoa','unknown')">Unknown</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">How Did They Find Anvil?</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'referral')">Referral</button>
+        <button type="button" class="chip" onclick="pick(this,'referral')">Google</button>
+        <button type="button" class="chip" onclick="pick(this,'referral')">Nextdoor</button>
+        <button type="button" class="chip" onclick="pick(this,'referral')">Instagram</button>
+        <button type="button" class="chip" onclick="pick(this,'referral')">Saw a job site</button>
+        <button type="button" class="chip" onclick="pick(this,'referral')">anvillandscape.com</button>
+        <button type="button" class="chip" onclick="pick(this,'referral')">Other</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. MEASUREMENTS -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num">3</div><div class="sec-title">Site Measurements</div></div>
+  <div class="sec-body">
+    <div class="field"><label class="f-label">Estimated Total Sq Ft</label><div class="f-hint">Measure length × width. For irregular shapes estimate by zones.</div><input type="number" id="sqft" placeholder="e.g. 450" oninput="updProg()"></div>
+    <div class="field" id="bedCntField" style="display:none;">
+      <label class="f-label">Number of Beds</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'bedCount')">1</button>
+        <button type="button" class="chip" onclick="pick(this,'bedCount')">2</button>
+        <button type="button" class="chip" onclick="pick(this,'bedCount')">3</button>
+        <button type="button" class="chip" onclick="pick(this,'bedCount')">4+</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Sun Exposure</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'sun')">Full Sun</button>
+        <button type="button" class="chip" onclick="pick(this,'sun')">Part Shade</button>
+        <button type="button" class="chip" onclick="pick(this,'sun')">Mixed</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Slope</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'slope')">Flat</button>
+        <button type="button" class="chip" onclick="pick(this,'slope')">Gentle slope</button>
+        <button type="button" class="chip" onclick="pick(this,'slope')">Steep slope</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Drainage</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'drainage')">Good</button>
+        <button type="button" class="chip" onclick="pick(this,'drainage')">Pools in spots</button>
+        <button type="button" class="chip" onclick="pick(this,'drainage')">Poor overall</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. EXISTING CONDITIONS -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num">4</div><div class="sec-title">Existing Conditions</div></div>
+  <div class="sec-body">
+    <div class="field">
+      <label class="f-label">Current Ground Cover</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="multi(this,'groundcover')">Lawn / turf</button>
+        <button type="button" class="chip" onclick="multi(this,'groundcover')">Weeds</button>
+        <button type="button" class="chip" onclick="multi(this,'groundcover')">Bare soil</button>
+        <button type="button" class="chip" onclick="multi(this,'groundcover')">Existing beds</button>
+        <button type="button" class="chip" onclick="multi(this,'groundcover')">Rock / DG</button>
+        <button type="button" class="chip" onclick="multi(this,'groundcover')">Mixed</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Existing Features to Keep</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="multi(this,'keep')">Trees</button>
+        <button type="button" class="chip" onclick="multi(this,'keep')">Shrubs</button>
+        <button type="button" class="chip" onclick="multi(this,'keep')">Irrigation</button>
+        <button type="button" class="chip" onclick="multi(this,'keep')">Path / patio</button>
+        <button type="button" class="chip" onclick="multi(this,'keep')">Lighting</button>
+        <button type="button" class="chip" onclick="multi(this,'keep')">None</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Existing Irrigation</label>
+      <div class="tog-row">
+        <button type="button" class="tog" onclick="tog(this,'irrigation','yes');showIrrDetail(true)">Yes</button>
+        <button type="button" class="tog" onclick="tog(this,'irrigation','no');showIrrDetail(false)">No</button>
+        <button type="button" class="tog" onclick="tog(this,'irrigation','unknown');showIrrDetail(false)">Unknown</button>
+      </div>
+      <div class="irr-detail" id="irrDetail">
+        <label class="f-label" style="margin-top:10px;">Does It Cover the New Area?</label>
+        <div class="tog-row">
+          <button type="button" class="tog" onclick="tog(this,'irrCovers','yes')">Yes — full</button>
+          <button type="button" class="tog" onclick="tog(this,'irrCovers','partial')">Partial</button>
+          <button type="button" class="tog" onclick="tog(this,'irrCovers','no')">No</button>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Equipment Access</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'access')">Full access</button>
+        <button type="button" class="chip" onclick="pick(this,'access')">Gate access</button>
+        <button type="button" class="chip" onclick="pick(this,'access')">Hand tools only</button>
+      </div>
+    </div>
+    <div class="field"><label class="f-label">Additional Notes on Site</label><textarea id="siteNotes" rows="3" placeholder="Utilities, obstacles, neighbor issues, anything unusual..."></textarea></div>
+  </div>
+</div>
+
+<!-- 5. DESIGN PREFERENCES -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num">5</div><div class="sec-title">Design Preferences</div></div>
+  <div class="sec-body">
+    <div class="field">
+      <label class="f-label">Style Direction</label>
+      <div class="f-hint">Pick the vibe that fits the client.</div>
+      <button type="button" class="style-btn" onclick="tog(this,'style','modern')"><span class="style-name">Modern / Low-Maintenance</span><span class="style-desc">Clean lines, structural, minimal bloom clutter, rock mulch</span></button>
+      <button type="button" class="style-btn" onclick="tog(this,'style','naturalistic')"><span class="style-name">Naturalistic / Pollinator</span><span class="style-desc">Meadow feel, long bloom, wildlife-friendly, wood mulch</span></button>
+      <button type="button" class="style-btn" onclick="tog(this,'style','traditional')"><span class="style-name">Traditional / High-End</span><span class="style-desc">Tidy, colorful, classic curb appeal, wood mulch, steel edging</span></button>
+      <button type="button" class="style-btn" onclick="tog(this,'style','native')"><span class="style-name">Native / Rock-Forward</span><span class="style-desc">Driest palette, boulders, rock mulch, rebate-optimized</span></button>
+    </div>
+    <div class="field">
+      <label class="f-label">Mulch Preference</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'mulch')">Wood / cedar</button>
+        <button type="button" class="chip" onclick="pick(this,'mulch')">Rock / DG</button>
+        <button type="button" class="chip" onclick="pick(this,'mulch')">Mixed</button>
+        <button type="button" class="chip" onclick="pick(this,'mulch')">Client decides</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Irrigation Add-On</label>
+      <div class="tog-row">
+        <button type="button" class="tog" onclick="tog(this,'irrAddon','yes')">Yes</button>
+        <button type="button" class="tog" onclick="tog(this,'irrAddon','no')">No</button>
+        <button type="button" class="tog" onclick="tog(this,'irrAddon','maybe')">Discuss</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Color Preference</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="multi(this,'color')">Purple / blue</button>
+        <button type="button" class="chip" onclick="multi(this,'color')">Yellow / gold</button>
+        <button type="button" class="chip" onclick="multi(this,'color')">Red / orange</button>
+        <button type="button" class="chip" onclick="multi(this,'color')">White / silver</button>
+        <button type="button" class="chip" onclick="multi(this,'color')">Mixed / all</button>
+        <button type="button" class="chip" onclick="multi(this,'color')">No preference</button>
+      </div>
+    </div>
+    <div class="field"><label class="f-label">Anything They Definitely Want</label><textarea id="wantNotes" rows="2" placeholder="Specific plants, features, elements they mentioned..."></textarea></div>
+    <div class="field"><label class="f-label">Anything They Definitely Don't Want</label><textarea id="dontWantNotes" rows="2" placeholder="Plants they hate, colors to avoid, features they dislike..."></textarea></div>
+  </div>
+</div>
+
+<!-- 6. XERISCAPE ZONES (xeriscape only) -->
+<div class="sec xonly" id="secXer">
+  <div class="sec-hdr"><div class="sec-num">6</div><div class="sec-title">Xeriscape Zones</div></div>
+  <div class="sec-body">
+    <div class="field">
+      <label class="f-label">Boulder Accents</label>
+      <div class="tog-row">
+        <button type="button" class="tog" onclick="tog(this,'boulders','yes')">Yes</button>
+        <button type="button" class="tog" onclick="tog(this,'boulders','no')">No</button>
+        <button type="button" class="tog" onclick="tog(this,'boulders','maybe')">Discuss</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Hardscape</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="multi(this,'hardscape')">Flagstone path</button>
+        <button type="button" class="chip" onclick="multi(this,'hardscape')">DG patio</button>
+        <button type="button" class="chip" onclick="multi(this,'hardscape')">Stepping stones</button>
+        <button type="button" class="chip" onclick="multi(this,'hardscape')">None</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Ground Cover Type</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'groundtype')">Decomposed granite</button>
+        <button type="button" class="chip" onclick="pick(this,'groundtype')">River rock</button>
+        <button type="button" class="chip" onclick="pick(this,'groundtype')">Mixed</button>
+        <button type="button" class="chip" onclick="pick(this,'groundtype')">Client decides</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Package Tier</label>
+      <button type="button" class="pkg" onclick="togPkg(this,'starter')"><strong>Starter</strong> — ~500 sq ft · $3,500–5,500</button>
+      <button type="button" class="pkg" onclick="togPkg(this,'standard')"><strong>Standard</strong> — ~1,000 sq ft · $7,000–10,000</button>
+      <button type="button" class="pkg" onclick="togPkg(this,'premium')"><strong>Premium</strong> — ~1,500+ sq ft · $12,000–18,000</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUDGET + TIMELINE -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num" id="budgetNum">6</div><div class="sec-title">Budget + Timeline</div></div>
+  <div class="sec-body">
+    <div class="field">
+      <label class="f-label">Budget Range</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'budget')">Under $2,000</button>
+        <button type="button" class="chip" onclick="pick(this,'budget')">$2,000–5,000</button>
+        <button type="button" class="chip" onclick="pick(this,'budget')">$5,000–10,000</button>
+        <button type="button" class="chip" onclick="pick(this,'budget')">$10,000–18,000</button>
+        <button type="button" class="chip" onclick="pick(this,'budget')">$18,000+</button>
+        <button type="button" class="chip" onclick="pick(this,'budget')">Flexible</button>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Desired Start Window</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'timing')">ASAP</button>
+        <button type="button" class="chip" onclick="pick(this,'timing')">April–May</button>
+        <button type="button" class="chip" onclick="pick(this,'timing');showTimingWarn(false)">September–October</button>
+        <button type="button" class="chip" onclick="pick(this,'timing');showTimingWarn(true)" data-warn="1">June–August</button>
+        <button type="button" class="chip" onclick="pick(this,'timing');showTimingWarn(false)">Next spring</button>
+        <button type="button" class="chip" onclick="pick(this,'timing');showTimingWarn(false)">Flexible</button>
+      </div>
+      <div class="inline-warn" id="timingWarn">⚠️ <strong>July is a hard no.</strong> June and August are possible but watering commitment doubles. Price accordingly and confirm with client.</div>
+    </div>
+    <div class="field">
+      <label class="f-label">Decision Timeline</label>
+      <div class="chips">
+        <button type="button" class="chip" onclick="pick(this,'decision')">Ready now</button>
+        <button type="button" class="chip" onclick="pick(this,'decision')">Within 2 weeks</button>
+        <button type="button" class="chip" onclick="pick(this,'decision')">1–2 months</button>
+        <button type="button" class="chip" onclick="pick(this,'decision')">Just exploring</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REBATES -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num" id="rebateNum">7</div><div class="sec-title">Rebate Eligibility</div></div>
+  <div class="sec-body">
+    <div class="alert-note">Confirm municipality above. Denver Water fully allocated 2026 — do not promise. Aurora GRIP is strongest active rebate.</div>
+    <button type="button" class="rebate" onclick="togRebate(this,'aurora')"><div class="reb-check">✓</div><div><span class="reb-name">Aurora GRIP</span><span class="reb-amt">Up to $4,000 · Active</span></div></button>
+    <button type="button" class="rebate" onclick="togRebate(this,'castlerock')"><div class="reb-check">✓</div><div><span class="reb-name">Castle Rock</span><span class="reb-amt">$3.25/sq ft · Active</span></div></button>
+    <button type="button" class="rebate" onclick="togRebate(this,'fortcollins')"><div class="reb-check">✓</div><div><span class="reb-name">Fort Collins</span><span class="reb-amt">Up to $1,000 · Active</span></div></button>
+    <button type="button" class="rebate" onclick="togRebate(this,'denverwater')"><div class="reb-check">✓</div><div><span class="reb-name">Denver Water</span><span class="reb-amt">Fully allocated 2026 — do not promise</span></div></button>
+  </div>
+</div>
+
+<!-- ADD-ONS -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num" id="addonNum">8</div><div class="sec-title">Add-Ons to Discuss</div></div>
+  <div class="sec-body">
+    <div class="chips">
+      <button type="button" class="chip" onclick="multi(this,'addons')">Drip irrigation</button>
+      <button type="button" class="chip" onclick="multi(this,'addons')">Smart controller</button>
+      <button type="button" class="chip" onclick="multi(this,'addons')">Landscape lighting</button>
+      <button type="button" class="chip" onclick="multi(this,'addons')">Annual maintenance</button>
+      <button type="button" class="chip" onclick="multi(this,'addons')">Flagstone path</button>
+      <button type="button" class="chip" onclick="multi(this,'addons')">DG patio</button>
+      <button type="button" class="chip" onclick="multi(this,'addons')">Snow removal</button>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL NOTES -->
+<div class="sec">
+  <div class="sec-hdr"><div class="sec-num" id="notesNum">9</div><div class="sec-title">Final Notes</div></div>
+  <div class="sec-body">
+    <div class="field"><label class="f-label">Any Other Context for the Proposal</label><textarea id="finalNotes" rows="4" placeholder="HOA restrictions, neighbor considerations, client personality, anything the GPT should know..."></textarea></div>
+  </div>
+</div>
+
+<div class="btn-wrap">
+  <button type="button" class="gen" onclick="generate()">Generate GPT Prompt →</button>
+  <button type="button" class="rst" onclick="reset()">Reset Form</button>
+</div>
+
+<div class="instr" id="instr">
+  <div class="instr-title">Next Steps — Run the Proposal Engine</div>
+  <div class="instr-step" data-n="1.">Copy the prompt below</div>
+  <div class="instr-step" data-n="2.">Open your Anvil Proposal Engine GPT in ChatGPT</div>
+  <div class="instr-step" data-n="3.">Upload all yard photos you took on site</div>
+  <div class="instr-step" data-n="4.">Paste the copied prompt into the message field</div>
+  <div class="instr-step" data-n="5.">Send: <em>"Run the Anvil [Flower Bed / Xeriscape] Engine on these photos."</em></div>
+  <div class="instr-step" data-n="6.">Copy the render prompt → paste into DALL-E for the mockup image</div>
+</div>
+
+<div class="out-wrap" id="outWrap">
+  <div class="out-hdr">
+    <div class="out-title">GPT Prompt — Copy This</div>
+    <button type="button" class="copy-btn" id="copyBtn" onclick="doCopy()">Copy</button>
+  </div>
+  <div class="out-body" id="outBody"></div>
+</div>
+
+<script>
+const S = {
+  svc:null, nbhd:null, muni:null, hoa:null, referral:null,
+  bedCount:null, sun:null, slope:null, drainage:null,
+  groundcover:[], keep:[], irrigation:null, irrCovers:null, access:null,
+  style:null, mulch:null, irrAddon:null, color:[],
+  boulders:null, hardscape:[], groundtype:null, pkg:null,
+  budget:null, timing:null, decision:null,
+  rebates:[], addons:[]
+};
+
+function setSvc(v) {
+  S.svc = v;
+  document.getElementById('svc-bed').classList.toggle('on', v==='bed');
+  document.getElementById('svc-xer').classList.toggle('on', v==='xeriscape');
+  document.getElementById('secXer').classList.toggle('show', v==='xeriscape');
+  document.getElementById('bedCntField').style.display = v==='bed' ? 'block' : 'none';
+  const o = v==='xeriscape' ? 1 : 0;
+  document.getElementById('budgetNum').textContent = 6+o;
+  document.getElementById('rebateNum').textContent = 7+o;
+  document.getElementById('addonNum').textContent = 8+o;
+  document.getElementById('notesNum').textContent = 9+o;
+  updProg();
+}
+
+function pick(el, key) {
+  el.parentElement.querySelectorAll('button.chip').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  S[key] = el.textContent.trim();
+  updProg();
+}
+
+function multi(el, key) {
+  el.classList.toggle('on');
+  S[key] = Array.from(el.parentElement.querySelectorAll('button.chip.on')).map(b => b.textContent.trim());
+  updProg();
+}
+
+function tog(el, key, val) {
+  // For style buttons and pkg, they're in a column not a row
+  const parent = el.parentElement;
+  parent.querySelectorAll('button.tog, button.style-btn').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  S[key] = val;
+  updProg();
+}
+
+function togPkg(el, val) {
+  el.parentElement.querySelectorAll('button.pkg').forEach(b => b.classList.remove('on'));
+  el.classList.add('on');
+  S.pkg = val;
+  updProg();
+}
+
+function togRebate(el, val) {
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) { if (!S.rebates.includes(val)) S.rebates.push(val); }
+  else { S.rebates = S.rebates.filter(r => r !== val); }
+}
+
+function showIrrDetail(show) {
+  document.getElementById('irrDetail').classList.toggle('show', show);
+}
+
+function showTimingWarn(show) {
+  document.getElementById('timingWarn').classList.toggle('show', show);
+}
+
+function updProg() {
+  const fields = [S.svc, S.sun, S.slope, S.style, S.mulch, S.budget, S.timing,
+    document.getElementById('sqft').value, document.getElementById('clientName').value];
+  const pct = Math.round(fields.filter(f => f && f !== '').length / fields.length * 100);
+  document.getElementById('pf').style.width = pct + '%';
+}
+
+document.querySelectorAll('input, textarea').forEach(el => el.addEventListener('input', updProg));
+
+function generate() {
+  const name = document.getElementById('clientName').value || 'Not provided';
+  const addr = document.getElementById('clientAddress').value || 'Not provided';
+  const sqft = document.getElementById('sqft').value || 'Not measured';
+  const siteN = document.getElementById('siteNotes').value || 'None';
+  const wantN = document.getElementById('wantNotes').value || 'None';
+  const dontN = document.getElementById('dontWantNotes').value || 'None';
+  const finalN = document.getElementById('finalNotes').value || 'None';
+
+  const styleMap = {
+    modern:'Modern / Low-Maintenance (clean lines, structural, rock mulch)',
+    naturalistic:'Naturalistic / Pollinator (meadow feel, long bloom, wood mulch)',
+    traditional:'Traditional / High-End (tidy, colorful, wood mulch, steel edging)',
+    native:'Native / Rock-Forward (driest palette, boulders, rock mulch, rebate-optimized)'
+  };
+  const pkgMap = {
+    starter:'Starter (~500 sq ft · $3,500–5,500)',
+    standard:'Standard (~1,000 sq ft · $7,000–10,000)',
+    premium:'Premium (~1,500+ sq ft · $12,000–18,000)'
+  };
+  const rebMap = {
+    aurora:'Aurora GRIP (up to $4,000 — active)',
+    castlerock:'Castle Rock ($3.25/sq ft — active)',
+    fortcollins:'Fort Collins (up to $1,000 — active)',
+    denverwater:'Denver Water (fully allocated 2026 — do NOT promise)'
+  };
+
+  const svcLabel = S.svc === 'bed' ? 'Flower Bed Install' : 'Full Xeriscape Transformation';
+
+  let p = `ANVIL LANDSCAPE CO. — SITE INTAKE DATA
+========================================
+Run the Anvil Proposal Engine on the uploaded photos using the following confirmed site data.
+
+SERVICE TYPE: ${svcLabel}
+
+CLIENT
+------
+Name: ${name}
+Address: ${addr}
+Neighborhood: ${S.nbhd || 'Not specified'}
+Municipality: ${S.muni || 'Not specified'}
+HOA: ${S.hoa || 'Not specified'}
+How They Found Anvil: ${S.referral || 'Not specified'}
+
+SITE MEASUREMENTS
+-----------------
+Total Sq Ft: ${sqft}${S.svc==='bed' ? '\nNumber of Beds: '+(S.bedCount||'Not specified') : ''}
+Sun Exposure: ${S.sun || 'Not specified'}
+Slope: ${S.slope || 'Not specified'}
+Drainage: ${S.drainage || 'Not specified'}
+Equipment Access: ${S.access || 'Not specified'}
+
+EXISTING CONDITIONS
+-------------------
+Current Ground Cover: ${S.groundcover.length ? S.groundcover.join(', ') : 'Not specified'}
+Features to Keep: ${S.keep.length ? S.keep.join(', ') : 'None specified'}
+Existing Irrigation: ${S.irrigation || 'Not specified'}${S.irrigation==='yes' ? '\nIrrigation Covers New Area: '+(S.irrCovers||'Not specified') : ''}
+Site Notes: ${siteN}
+
+DESIGN PREFERENCES
+------------------
+Style Direction: ${S.style ? styleMap[S.style] : 'Not specified'}
+Mulch Preference: ${S.mulch || 'Not specified'}
+Irrigation Add-On: ${S.irrAddon || 'Not specified'}
+Color Preference: ${S.color.length ? S.color.join(', ') : 'No preference'}
+Client Wants: ${wantN}
+Client Does NOT Want: ${dontN}`;
+
+  if (S.svc === 'xeriscape') {
+    p += `
+
+XERISCAPE ZONES
+---------------
+Boulder Accents: ${S.boulders || 'Not specified'}
+Hardscape: ${S.hardscape.length ? S.hardscape.join(', ') : 'None'}
+Ground Cover Type: ${S.groundtype || 'Not specified'}
+Package Tier: ${S.pkg ? pkgMap[S.pkg] : 'Not specified'}`;
+  }
+
+  p += `
+
+BUDGET + TIMELINE
+-----------------
+Budget Range: ${S.budget || 'Not specified'}
+Desired Start: ${S.timing || 'Not specified'}
+Decision Timeline: ${S.decision || 'Not specified'}
+
+REBATE ELIGIBILITY
+------------------
+${S.rebates.length ? S.rebates.map(r => '• '+rebMap[r]).join('\n') : '• No rebates identified'}
+
+ADD-ONS TO DISCUSS
+------------------
+${S.addons.length ? S.addons.map(a => '• '+a).join('\n') : '• None flagged'}
+
+ADDITIONAL CONTEXT
+------------------
+${finalN}
+
+========================================
+INSTRUCTIONS FOR THE PROPOSAL ENGINE:
+Use the confirmed measurements and preferences above — do NOT override them with photo estimates. The sq ft, style direction, mulch preference, and rebate eligibility are confirmed on-site. Only use plants from the Anvil Plant Library. Generate the full proposal including: property analysis, recommended design, plant list with costs, materials breakdown, total estimate, rebate note, add-on recommendations, installation timeline, Year 1 care guide, annual maintenance proposal, 5-year client value, and render prompt for mockup image.`;
+
+  document.getElementById('outBody').textContent = p;
+  document.getElementById('outWrap').classList.add('show');
+  document.getElementById('instr').classList.add('show');
+  setTimeout(() => document.getElementById('outWrap').scrollIntoView({behavior:'smooth',block:'start'}), 100);
+}
+
+function doCopy() {
+  const text = document.getElementById('outBody').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+function reset() {
+  if (!confirm('Reset form? All entries will be cleared.')) return;
+  Object.keys(S).forEach(k => { S[k] = Array.isArray(S[k]) ? [] : null; });
+  document.querySelectorAll('input[type=text],input[type=number],textarea').forEach(el => el.value = '');
+  document.querySelectorAll('.chip.on,.tog.on,.svc.on,.rebate.on,.style-btn.on,.pkg.on').forEach(el => el.classList.remove('on'));
+  document.getElementById('secXer').classList.remove('show');
+  document.getElementById('bedCntField').style.display = 'none';
+  document.getElementById('irrDetail').classList.remove('show');
+  document.getElementById('timingWarn').classList.remove('show');
+  document.getElementById('outWrap').classList.remove('show');
+  document.getElementById('instr').classList.remove('show');
+  ['budgetNum','rebateNum','addonNum','notesNum'].forEach((id,i) => document.getElementById(id).textContent = 6+i);
+  document.getElementById('pf').style.width = '0%';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
